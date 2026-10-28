@@ -1,0 +1,36 @@
+{
+  "name": "nutrimap",
+  "version": "1.0.0",
+  "description": "Track the nutrients you eat and see what you're missing.",
+  "author": "Nutrimap",
+  "main": "electron/main.js",
+  "scripts": {
+    "desktop": "electron .",
+    "desktop:win": "electron-builder --win --publish never",
+    "desktop:mac": "electron-builder --mac --publish never",
+    "desktop:linux": "electron-builder --linux --publish never",
+    "mobile:sync": "cap sync",
+    "mobile:android": "cap open android",
+    "mobile:ios": "cap open ios"
+  },
+  "dependencies": {
+    "@capacitor/android": "latest",
+    "@capacitor/core": "latest",
+    "@capacitor/ios": "latest"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "latest",
+    "electron": "latest",
+    "electron-builder": "latest"
+  },
+  "build": {
+    "appId": "com.nutrimap.app",
+    "productName": "Nutrimap",
+    "files": ["electron/**/*", "www/**/*", "package.json"],
+    "icon": "www/icons/icon-512.png",
+    "directories": { "output": "dist" },
+    "win": { "target": "nsis" },
+    "mac": { "target": "dmg", "category": "public.app-category.healthcare-fitness" },
+    "linux": { "target": "AppImage", "category": "Utility" }
+  }
+}

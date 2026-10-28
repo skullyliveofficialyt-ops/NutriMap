@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#14312B">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="icon" href="icons/icon-192.png">
+<title>Nutrimap – nutrient tracker</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=DM+Sans:wght@400;500;700&display=swap">
+<style>
+:root{--bg:#EEF3F0;--surface:#FFFFFF;--ink:#14312B;--mute:#5B7068;--line:#D5E0DA;--ok:#2B8A66;--mid:#D9892B;--low:#CF4B33;--track:#E2EBE6;--accent:#14312B;--onaccent:#FFFFFF;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0F1A17;--surface:#17251F;--ink:#E6F0EB;--mute:#93A89F;--line:#27392F;--ok:#4CC49A;--mid:#E8A64F;--low:#EE7A62;--track:#223229;--accent:#4CC49A;--onaccent:#0F1A17;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0F1A17;--surface:#17251F;--ink:#E6F0EB;--mute:#93A89F;--line:#27392F;--ok:#4CC49A;--mid:#E8A64F;--low:#EE7A62;--track:#223229;--accent:#4CC49A;--onaccent:#0F1A17;color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.5 "DM Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+.wrap{max-width:980px;margin:0 auto;padding:20px 16px 48px}
+h1,h2{font-family:"Bricolage Grotesque","DM Sans",system-ui,sans-serif;margin:0;letter-spacing:-.01em}
+h1{font-size:28px}
+h2{font-size:19px;margin-bottom:12px}
+header{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:18px}
+.sub{color:var(--mute);font-size:14px;margin:2px 0 0}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px}
+.grid{display:grid;gap:16px;grid-template-columns:1fr}
+@media(min-width:860px){.grid{grid-template-columns:1.1fr 1fr}}
+button,select,input{font:inherit;color:var(--ink)}
+button{cursor:pointer;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:7px 12px}
+button:hover{border-color:var(--ink)}
+button.pri{background:var(--accent);color:var(--onaccent);border-color:var(--accent);font-weight:500}
+button:disabled{opacity:.4;cursor:default}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--mid);outline-offset:2px}
+input,select{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.nut{margin:0 0 14px}
+.nut .top{display:flex;justify-content:space-between;font-size:14px;margin-bottom:5px}
+.nut .top b{font-weight:500}
+.nut .top span{color:var(--mute)}
+.bar{height:12px;background:var(--track);border-radius:6px;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:6px;transition:width .35s}
+.gap{border-left:4px solid var(--low);padding:4px 0 4px 12px;margin:0 0 12px;font-size:14px}
+.gap b{display:block;font-weight:700}
+.gap span{color:var(--mute)}
+.list{max-height:260px;overflow-y:auto;margin-top:10px;border-top:1px solid var(--line)}
+.item{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--line);font-size:15px}
+.item small{color:var(--mute);display:block;font-size:13px}
+.tag{font-size:12px;border:1px solid var(--line);border-radius:6px;padding:0 6px;color:var(--mute);margin-left:6px}
+.empty{color:var(--mute);font-size:14px;padding:12px 0}
+.note{color:var(--mute);font-size:13px;margin-top:20px}
+.add{display:grid;grid-template-columns:1fr 72px;gap:8px}
+.log{margin-top:18px}
+dialog{background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:14px;max-width:520px;width:calc(100% - 32px);padding:18px}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+textarea{width:100%;height:150px;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:8px;font:13px/1.4 ui-monospace,Menlo,Consolas,monospace;margin:10px 0}
+#bkm{color:var(--mute);font-size:14px;margin:0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Nutrimap</h1>
+      <p class="sub">See which nutrients you’re missing, not just calories.</p>
+    </div>
+    <div class="row">
+      <label class="sub" for="sex">Targets for</label>
+      <select id="sex"><option value="f">Women (adult)</option><option value="m">Men (adult)</option></select>
+      <button id="bkopen">Backup</button>
+    </div>
+  </header>
+
+  <div class="row" style="margin-bottom:14px">
+    <button id="prev" aria-label="Previous day">‹</button>
+    <strong id="day" style="min-width:110px;text-align:center"></strong>
+    <button id="next" aria-label="Next day">›</button>
+  </div>
+
+  <div class="grid">
+    <section class="card">
+      <h2>Add food or supplement</h2>
+      <div class="add">
+        <input id="q" type="search" placeholder="Search: nihari, daal, saag, vitamin D…" aria-label="Search foods">
+        <input id="qty" type="number" min="0.5" step="0.5" value="1" aria-label="Servings">
+      </div>
+      <div class="list" id="foods"></div>
+      <div class="log">
+        <h2>Logged today</h2>
+        <div id="log"></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Your nutrients</h2>
+      <div id="nuts"></div>
+      <h2 style="margin-top:22px">Gaps and what helps</h2>
+      <div id="gaps"></div>
+    </section>
+  </div>
+
+  <p class="note">Values are approximate averages per serving and targets are general adult guidelines. This is for education, not medical advice. Talk to a doctor or dietitian about deficiencies or supplements.</p>
+</div>
+
+<dialog id="bk">
+  <h2>Back up or restore</h2>
+  <p id="bkm"></p>
+  <textarea id="bkt" aria-label="Backup data" spellcheck="false"></textarea>
+  <div class="row">
+    <button id="bkcopy" class="pri">Copy backup</button>
+    <button id="bksave">Save as file</button>
+    <button id="bkrestore">Restore from text</button>
+    <button id="bkclose">Close</button>
+  </div>
+</dialog>
+<script>
+// name, serving, kcal, protein g, fiber g, iron mg, calcium mg, vit C mg, B12 mcg, magnesium mg, vit D mcg, isSupplement
+const F=[
+["Roti (1 medium)","1 roti",120,3.5,3,1,12,0,0,30,0],
+["Paratha (1)","1 paratha",260,5,3,1.4,20,0,0,35,0],
+["Rice, cooked","1 cup",205,4.3,.6,1.9,16,0,0,19,0],
+["Chicken biryani","1 plate",400,20,2,2.5,50,5,.5,45,0],
+["Masoor daal, cooked","1 cup",230,18,15.6,6.6,38,3,0,71,0],
+["Chana (chickpeas), cooked","1 cup",269,14.5,12.5,4.7,80,2,0,79,0],
+["Chicken curry","150 g",240,25,1,1.3,30,4,.4,30,.1],
+["Beef, cooked","100 g",250,26,0,2.6,18,0,2.5,21,.1],
+["Fish fillet (salmon)","100 g",206,22,0,.3,12,0,3.2,29,11],
+["Egg, boiled","1 egg",78,6.3,0,.6,25,0,.6,5,1.1],
+["Milk","1 cup",150,8,0,.1,300,0,1.2,24,2],
+["Dahi (yogurt)","1 cup",150,8.5,0,.1,296,1,1.1,27,.1],
+["Palak / saag, cooked","1 cup",41,5.3,4.3,6.4,245,17.6,0,157,0],
+["Bhindi (okra), cooked","1 cup",35,3,4,.5,130,26,0,57,0],
+["Aloo (potato), boiled","1 medium",160,4.3,3.8,1.8,26,17,0,48,0],
+["Banana","1 medium",105,1.3,3.1,.3,6,10.3,0,32,0],
+["Orange","1 medium",62,1.2,3.1,.1,52,70,0,13,0],
+["Apple","1 medium",95,.5,4.4,.2,11,8.4,0,9,0],
+["Dates (khajoor)","4 dates",90,.7,2.4,.3,16,0,0,20,0],
+["Almonds","28 g",164,6,3.5,1.1,76,0,0,76,0],
+["Peanuts","28 g",161,7,2.4,1.3,26,0,0,48,0],
+["Vitamin D3, 1000 IU","1 tablet",0,0,0,0,0,0,0,0,25,1],
+["Vitamin B12, 500 mcg","1 tablet",0,0,0,0,0,0,500,0,0,1],
+["Iron, 18 mg","1 tablet",0,0,0,18,0,0,0,0,0,1],
+["Calcium, 500 mg","1 tablet",0,0,0,0,500,0,0,0,0,1],
+["Magnesium, 200 mg","1 tablet",0,0,0,0,0,0,0,200,0,1],
+["Vitamin C, 500 mg","1 tablet",0,0,0,0,0,500,0,0,0,1],
+["Naan (plain)","1 piece",262,8.7,2,2.2,60,0,0,25,0],
+["Phulka / chapati (small)","1 piece",85,2.7,2.2,.7,8,0,0,20,0],
+["Puri","1 puri",150,2.5,1,.8,10,0,0,15,0],
+["Aloo paratha","1 paratha",300,6,3.5,1.6,25,3,0,40,0],
+["Chicken pulao","1 plate",380,17,1.5,2,35,3,.4,40,0],
+["Khichdi (daal-rice)","1 cup",230,9,4,2.5,30,2,0,45,0],
+["Daliya (cracked wheat), cooked","1 cup",151,5.6,8.2,1.7,18,0,0,59,0],
+["Oats, cooked","1 cup",166,5.9,4,2.1,21,0,0,63,0],
+["Moong daal, cooked","1 cup",212,14,15.4,2.8,55,2,0,97,0],
+["Mash daal (urad), cooked","1 cup",240,16,11,4.5,60,1,0,70,0],
+["Lobia (black-eyed peas), cooked","1 cup",200,13,11,4.3,40,1,0,91,0],
+["Rajma (kidney beans), cooked","1 cup",225,15,11,5.2,50,2,0,74,0],
+["Cholay (chickpea curry)","1 cup",280,12,10,4.5,90,4,0,70,0],
+["Nihari","1 bowl",450,30,1,3.5,40,3,2.5,35,.2],
+["Haleem","1 bowl",300,20,6,3.5,50,2,1,70,0],
+["Chicken karahi","1 serving",330,30,1.5,2,40,8,.5,40,.1],
+["Mutton curry","150 g",300,28,.5,3,25,1,2,30,.1],
+["Keema (minced meat curry)","1 cup",320,28,1.5,3.5,40,5,2,35,.2],
+["Chicken tikka","100 g",150,25,.5,1,20,2,.3,28,.1],
+["Seekh kebab","2 pieces",260,18,.5,2,30,0,1.5,22,.2],
+["Chapli kebab","1 piece",250,16,1,2.5,40,3,1.5,25,.2],
+["Liver (kaleji), cooked","100 g",175,27,0,6.5,5,2,70,18,1.1],
+["Fried fish","100 g",230,20,0,1,40,0,2,30,4],
+["Omelette (2 eggs, fried)","1 omelette",220,13,0,1.8,60,0,1,12,2.2],
+["Samosa (aloo)","1 samosa",160,3,2,1,15,3,0,20,0],
+["Pakora","4 pieces",200,4,3,1.5,30,3,0,30,0],
+["Karela (bitter gourd), cooked","1 cup",24,1,2.5,.4,20,13,0,17,0],
+["Lauki (bottle gourd), cooked","1 cup",20,.8,1.5,.4,25,8,0,20,0],
+["Gobi (cauliflower), cooked","1 cup",29,2.3,2.9,.4,20,55,0,16,0],
+["Sarson ka saag","1 cup",100,4,3,1.2,110,35,0,25,0],
+["Raita","1 cup",100,5,.5,.1,150,3,.6,15,.1],
+["Paneer","50 g",130,9,0,.1,100,0,.3,8,0],
+["Lassi, sweet","1 glass",200,6,0,.1,200,2,.7,20,.1],
+["Lassi, salted","1 glass",100,6,0,.1,200,2,.7,20,.1],
+["Doodh patti chai","1 cup",90,3.3,0,.1,120,0,.5,10,1],
+["Kheer","1 bowl",250,7,.3,.4,200,1,.8,22,1],
+["Gajar halwa","1/2 cup",250,3,2,.5,100,3,.4,20,.3],
+["Gulab jamun","1 piece",150,2,0,.2,40,0,.1,5,0],
+["Mango (aam)","1 cup sliced",99,1.4,2.6,.3,18,60,0,16,0],
+["Guava (amrood)","1 fruit",37,1.4,3,.1,9,125,0,9,0],
+["Pomegranate (anaar)","1 cup seeds",144,2.9,7,.5,28,18,0,17,0],
+["Watermelon (tarbooz)","2 cups",91,1.8,1.2,.7,20,25,0,31,0],
+["Pistachios","28 g",159,5.7,3,1.1,30,.7,0,34,0],
+["Walnuts (akhrot)","28 g",185,4.3,1.9,.8,28,.4,0,45,0]
+];
+const N=[["Calories","kcal"],["Protein","g"],["Fiber","g"],["Iron","mg"],["Calcium","mg"],["Vitamin C","mg"],["Vitamin B12","mcg"],["Magnesium","mg"],["Vitamin D","mcg"]];
+const T={m:[2400,56,38,8,1000,90,2.4,420,15],f:[2000,46,25,18,1000,75,2.4,320,15]};
+const $=s=>document.querySelector(s);
+const iso=d=>new Date(d-d.getTimezoneOffset()*6e4).toISOString().slice(0,10);
+const today=iso(new Date());
+let S={sex:"f",logs:{}},day=today;
+try{const r=localStorage.getItem("nutrimap-v1");if(r){const p=JSON.parse(r);if(p&&p.logs)S=p}}catch(e){}
+function save(){try{localStorage.setItem("nutrimap-v1",JSON.stringify(S))}catch(e){}}
+const fmt=v=>v>=100?Math.round(v):Math.round(v*10)/10;
+const entries=()=>S.logs[day]||(S.logs[day]=[]);
+function totals(){const t=Array(9).fill(0);entries().forEach(e=>{for(let k=0;k<9;k++)t[k]+=F[e.i][k+2]*e.q});return t}
+
+function renderFoods(){
+  const q=$("#q").value.trim().toLowerCase();
+  const m=F.map((f,i)=>({f,i})).filter(x=>!q||x.f[0].toLowerCase().includes(q)).sort((a,b)=>(a.f[11]?1:0)-(b.f[11]?1:0));
+  $("#foods").innerHTML=m.length?m.map(x=>`<div class="item"><div>${x.f[0]}${x.f[11]?'<span class="tag">supplement</span>':''}<small>${x.f[1]} · ${x.f[2]} kcal</small></div><button data-add="${x.i}">Add</button></div>`).join(""):'<div class="empty">No match. Try another name, like “daal” or “milk”.</div>';
+}
+function renderLog(){
+  const e=entries();
+  $("#log").innerHTML=e.length?e.map((x,n)=>`<div class="item"><div>${F[x.i][0]}<small>${x.q} × ${F[x.i][1]}</small></div><button data-del="${n}" aria-label="Remove ${F[x.i][0]}">Remove</button></div>`).join(""):'<div class="empty">Nothing logged yet. Add your first meal above.</div>';
+}
+function renderNuts(){
+  const t=totals(),g=T[S.sex];
+  $("#nuts").innerHTML=N.map((n,k)=>{
+    const p=g[k]?t[k]/g[k]:0,w=Math.min(100,p*100);
+    const c=k===0?"var(--mute)":p<.5?"var(--low)":p<1?"var(--mid)":"var(--ok)";
+    return `<div class="nut"><div class="top"><b>${n[0]}</b><span>${fmt(t[k])} / ${g[k]} ${n[1]} (${Math.round(p*100)}%)</span></div><div class="bar" role="progressbar" aria-label="${n[0]}" aria-valuenow="${Math.round(w)}" aria-valuemin="0" aria-valuemax="100"><i style="width:${w}%;background:${c}"></i></div></div>`;
+  }).join("");
+  if(!entries().length){$("#gaps").innerHTML='<div class="empty">Log a meal and your biggest gaps will show up here.</div>';return}
+  const gaps=N.map((n,k)=>({n,k,p:t[k]/g[k]})).filter(x=>x.k>0&&x.p<.6).sort((a,b)=>a.p-b.p).slice(0,3);
+  $("#gaps").innerHTML=gaps.length?gaps.map(x=>{
+    const best=F.filter(f=>!f[11]).sort((a,b)=>b[x.k+2]-a[x.k+2]).slice(0,3).map(f=>`${f[0]} (${fmt(f[x.k+2])} ${x.n[1]})`).join(", ");
+    return `<div class="gap"><b>${x.n[0]}: ${Math.round(x.p*100)}% of target</b><span>Good sources: ${best}.</span></div>`;
+  }).join(""):'<div class="empty">No major gaps so far today. Nice work.</div>';
+}
+function render(){
+  $("#day").textContent=day===today?"Today":new Date(day+"T12:00").toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"});
+  $("#next").disabled=day>=today;
+  $("#sex").value=S.sex;
+  renderLog();renderNuts();
+}
+document.addEventListener("click",ev=>{
+  const a=ev.target.closest("[data-add]"),d=ev.target.closest("[data-del]");
+  if(a){const q=parseFloat($("#qty").value)||1;entries().push({i:+a.dataset.add,q});save();render()}
+  if(d){entries().splice(+d.dataset.del,1);save();render()}
+});
+$("#q").addEventListener("input",renderFoods);
+$("#sex").addEventListener("change",e=>{S.sex=e.target.value;save();render()});
+const shift=n=>{const d=new Date(day+"T12:00");d.setDate(d.getDate()+n);day=iso(d);render()};
+$("#prev").onclick=()=>shift(-1);
+$("#next").onclick=()=>shift(1);
+const bk=$("#bk"),bkt=$("#bkt"),bkm=$("#bkm");
+$("#bkopen").onclick=()=>{bkt.value=JSON.stringify(S);bkm.textContent="Your data is shown below. Copy it or save it as a file to keep a backup. To restore, paste a backup into the box and press Restore.";bk.showModal()};
+$("#bkclose").onclick=()=>bk.close();
+$("#bkcopy").onclick=async()=>{try{await navigator.clipboard.writeText(bkt.value);bkm.textContent="Copied. Paste it somewhere safe, like a note or an email to yourself."}catch(e){bkt.select();bkm.textContent="Select the text in the box and copy it yourself."}};
+$("#bksave").onclick=()=>{try{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([bkt.value],{type:"application/json"}));a.download="nutrimap-backup.json";a.click();bkm.textContent="Saved as nutrimap-backup.json."}catch(e){bkm.textContent="Saving a file isn’t available here. Use Copy backup instead."}};
+$("#bkrestore").onclick=()=>{
+  try{
+    const p=JSON.parse(bkt.value);
+    if(!p||typeof p.logs!=="object"||!["m","f"].includes(p.sex))throw new Error("bad");
+    const logs={};
+    Object.keys(p.logs).forEach(d=>{if(/^\d{4}-\d{2}-\d{2}$/.test(d)&&Array.isArray(p.logs[d]))logs[d]=p.logs[d].filter(e=>e&&Number.isInteger(e.i)&&e.i>=0&&e.i<F.length&&e.q>0)});
+    if(!confirm("Replace your current data with this backup?"))return;
+    S={sex:p.sex,logs};save();render();bkm.textContent="Restored."
+  }catch(e){bkm.textContent="That isn’t a valid backup. Paste the full backup text and try again."}
+};
+renderFoods();render();
+if("serviceWorker" in navigator&&location.protocol.startsWith("http")){navigator.serviceWorker.register("sw.js").catch(()=>{})}
+</script>
+</body>
+</html>
